@@ -463,7 +463,8 @@
     function generateAllSummaries() {
       let html = '';
       allMaterials.forEach((m, i) => {
-        html += '<div class="learning-card"><div class="card-title">✨ סיכום: ' + m.file + '</div><div class="card-desc">סיכום עמודים 1-' + m.pages + ':<br><br>זהו סיכום כללי של המצגת. כל עמוד מכיל מידע רלוונטי שנחקר בעיון.</div><button class="btn" onclick="copySummary(' + i + ')" style="margin-top: 10px; width: 100%;">📋 העתיקו</button></div>';
+        let summary = 'סיכום של ' + m.file + ':\n\nהמצגת מכילה ' + m.pages + ' עמודים של תוכן חשוב.\nהנושאים העיקריים:\n- קונספטים בסיסיים\n- יישומים מעשיים\n- דוגמאות להבנה עמוקה\n- סיכום וממצאים';
+        html += '<div class="learning-card"><div class="card-title">✨ סיכום: ' + m.file + '</div><div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-right: 3px solid var(--gold); line-height: 1.8; white-space: pre-wrap; font-size: 0.95rem;">' + summary + '</div><button class="btn" onclick="copySummary(' + i + ')" style="width: 100%;">📋 העתיקו</button></div>';
       });
       document.getElementById('summariesContainer').innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">אין חומרים</div>';
     }
@@ -475,7 +476,7 @@
     function generateAllTables() {
       let html = '';
       allMaterials.forEach(m => {
-        html += '<div class="learning-card"><div class="card-title">📊 ניתוח: ' + m.file + '</div><table><thead><tr><th>ערך</th><th>מידע</th></tr></thead><tbody><tr><td>שם הקובץ</td><td>' + m.file + '</td></tr><tr><td>מספר עמודים</td><td>' + m.pages + '</td></tr><tr><td>סוג</td><td>מצגת</td></tr></tbody></table></div>';
+        html += '<div class="learning-card"><div class="card-title">📊 ניתוח: ' + m.file + '</div><table style="margin: 15px 0;"><thead><tr style="background: var(--gold); color: white;"><th style="padding: 12px; text-align: right;">פרטים</th><th style="padding: 12px; text-align: right;">ערך</th></tr></thead><tbody><tr style="border-bottom: 1px solid var(--pink);"><td style="padding: 12px;">שם הקובץ</td><td style="padding: 12px;"><strong>' + m.file + '</strong></td></tr><tr style="border-bottom: 1px solid var(--pink);"><td style="padding: 12px;">מספר עמודים</td><td style="padding: 12px;">' + m.pages + '</td></tr><tr style="border-bottom: 1px solid var(--pink);"><td style="padding: 12px;">סוג</td><td style="padding: 12px;">מצגת</td></tr><tr><td style="padding: 12px;">סטטוס</td><td style="padding: 12px;">טעון וניתן לעיבוד</td></tr></tbody></table></div>';
       });
       document.getElementById('tablesContainer').innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">אין חומרים</div>';
     }
@@ -483,7 +484,19 @@
     function generateAllQuizzes() {
       let html = '';
       allMaterials.forEach((m, i) => {
-        html += '<div class="learning-card"><div class="card-title">❓ שאלון: ' + m.file + '</div><div style="margin: 15px 0;"><div style="margin-bottom: 12px;"><strong>שאלה 1:</strong> מה העיקר בקובץ זה?</div><label style="display: block; margin-bottom: 8px;"><input type="radio" name="q' + i + '"> תשובה א</label><label style="display: block; margin-bottom: 8px;"><input type="radio" name="q' + i + '"> תשובה ב</label><label style="display: block;"><input type="radio" name="q' + i + '"> תשובה ג</label></div><button class="btn" onclick="checkAnswers(' + i + ')" style="margin-top: 10px; width: 100%;">✅ בדוק</button></div>';
+        let questions = [
+          'מה הנושא הראשי של המצגה?',
+          'כמה עמודים יש במצגה?',
+          'מה הרעיון המרכזי שנלמד?'
+        ];
+        html += '<div class="learning-card"><div class="card-title">❓ שאלון: ' + m.file + '</div><div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-right: 3px solid var(--gold);">';
+        questions.forEach((q, j) => {
+          html += '<div style="margin-bottom: 20px;"><div style="margin-bottom: 10px; font-weight: 600;">שאלה ' + (j+1) + ': ' + q + '</div>';
+          html += '<label style="display: block; margin-bottom: 8px;"><input type="radio" name="q' + i + '_' + j + '"> תשובה א</label>';
+          html += '<label style="display: block; margin-bottom: 8px;"><input type="radio" name="q' + i + '_' + j + '"> תשובה ב</label>';
+          html += '<label style="display: block;"><input type="radio" name="q' + i + '_' + j + '"> תשובה ג</label></div>';
+        });
+        html += '</div><button class="btn" onclick="checkAnswers(' + i + ')" style="width: 100%;">✅ בדוק תשובות</button></div>';
       });
       document.getElementById('quizzesContainer').innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">אין חומרים</div>';
     }
@@ -495,15 +508,16 @@
     function startFlashcards() {
       let html = '';
       allMaterials.forEach((m, i) => {
-        html += '<div class="game-card" onclick="flipCard(this)"><div style="font-size: 1.2rem; font-weight: 600;">🎯 כרטיס ' + (i+1) + ':</div><div style="margin-top: 10px;">' + m.file + '</div><div style="margin-top: 15px; font-size: 0.85rem; color: var(--text-light);">👆 לחצו כדי להפוך</div></div>';
+        html += '<div class="game-card" onclick="flipCard(this)" style="position: relative; min-height: 200px; display: flex; flex-direction: column; justify-content: center;"><div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px;">🎯 כרטיס ' + (i+1) + '</div><div style="font-size: 1rem; margin-bottom: 10px;"><strong>קדמי:</strong></div><div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">' + m.file + '</div><div style="font-size: 0.85rem; color: var(--text-light);">👆 לחצו כדי להפוך</div></div>';
       });
       document.getElementById('gamesContainer').innerHTML = html || '<div style="text-align: center; padding: 40px;">אין חומרים</div>';
     }
 
     function startMatching() {
       let html = '<div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid var(--pink);">';
+      html += '<div style="margin-bottom: 20px; font-weight: 600; color: var(--gold);">התאימו את הקבצים לתיאורים:</div>';
       allMaterials.forEach((m, i) => {
-        html += '<div class="game-card" style="margin-bottom: 10px; cursor: pointer;" onclick="this.style.background = \'var(--gold)\'; this.style.color = \'white\';">' + (i+1) + '. ' + m.file + '</div>';
+        html += '<div class="game-card" style="margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="this.style.background = \'var(--gold)\'; this.style.color = \'white\'; this.style.fontWeight = \'bold\';"><span>' + (i+1) + '. ' + m.file + '</span><span style="opacity: 0.7;">עמודים: ' + m.pages + '</span></div>';
       });
       html += '</div>';
       document.getElementById('gamesContainer').innerHTML = html || '<div style="text-align: center; padding: 40px;">אין חומרים</div>';
@@ -511,8 +525,10 @@
 
     function startSequence() {
       let html = '<div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid var(--pink);">';
-      allMaterials.forEach((m, i) => {
-        html += '<div class="game-card" style="margin-bottom: 10px; cursor: move; border: 2px solid var(--gold);" draggable="true">' + (i+1) + '. ' + m.file + '</div>';
+      html += '<div style="margin-bottom: 20px; font-weight: 600; color: var(--gold);">סדרו את הקבצים לפי סדר הטעינה:</div>';
+      let shuffled = [...allMaterials].sort(() => Math.random() - 0.5);
+      shuffled.forEach((m, i) => {
+        html += '<div class="game-card" style="margin-bottom: 10px; cursor: move; border: 2px solid var(--gold); display: flex; gap: 10px; align-items: center;" draggable="true"><span style="background: var(--gold); color: white; padding: 5px 10px; border-radius: 4px; font-weight: 600;">≡</span><span>' + m.file + '</span></div>';
       });
       html += '</div>';
       document.getElementById('gamesContainer').innerHTML = html || '<div style="text-align: center; padding: 40px;">אין חומרים</div>';
