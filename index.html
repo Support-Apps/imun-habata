@@ -137,7 +137,6 @@
       <button class="nav-tab" onclick="switchTab('quizzes')">❓ שאלונים</button>
       <button class="nav-tab" onclick="switchTab('games')">🎮 משחקים</button>
       <button class="nav-tab" onclick="switchTab('chat')">💬 צ'אט אישי</button>
-      <button class="nav-tab" onclick="switchTab('groupchat')">👥 צ'אט קבוצתי</button>
       <button class="nav-tab" onclick="switchTab('groups')">📚 קבוצות</button>
       <button class="nav-tab" onclick="switchTab('notes')">📝 הערות</button>
       <button class="nav-tab" onclick="switchTab('export')">💾 שיתוף</button>
@@ -148,11 +147,11 @@
       <div class="tab-wrapper">
         <div class="tab-title">📤 I – העלאת קבצים</div>
         <div class="upload-area" id="uploadZone">
-          <div style="font-size: 2.5rem; margin-bottom: 15px;">📄</div>
-          <div style="font-size: 1.1rem;">גררו קבצי PDF לכאן</div>
-          <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 8px;">או לחצו בחרו</div>
+          <div style="font-size: 2.5rem; margin-bottom: 15px;">📁</div>
+          <div style="font-size: 1.1rem;">גררו תיקיה או קבצים לכאן</div>
+          <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 8px;">או לחצו בחרו תיקיה</div>
         </div>
-        <input type="file" id="fileInput" multiple accept=".pdf">
+        <input type="file" id="fileInput" multiple accept=".pdf" webkitdirectory directory>
         <div class="file-list" id="fileList"></div>
         <div class="btn-group">
           <button class="btn btn-primary" id="processBtn" disabled>🚀 עבדו קבצים</button>
@@ -241,26 +240,6 @@
       </div>
     </div>
 
-    <!-- GROUP CHAT -->
-    <div class="tab-content" id="groupchat">
-      <div class="tab-wrapper">
-        <div class="tab-title">👥 צ'אט קבוצתי</div>
-        <div style="margin-bottom: 15px;">
-          <input type="text" id="groupName" placeholder="שם המשתמש..." style="width: 100%; padding: 10px; border: 2px solid var(--pink); border-radius: 6px; margin-bottom: 10px;">
-          <button class="btn btn-primary" onclick="setGroupName()" style="width: 100%; margin-bottom: 15px;">✅ הגדר שם</button>
-        </div>
-        <div class="chat-container">
-          <div class="chat-box">
-            <div class="chat-messages" id="groupChatMessages" style="background: #FFF;"></div>
-            <div class="chat-input">
-              <input type="text" id="groupChatInput" placeholder="כתבו הודעה לקבוצה...">
-              <button onclick="sendGroupMessage()">שלח</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- STUDY GROUPS -->
     <div class="tab-content" id="groups">
       <div class="tab-wrapper">
@@ -306,7 +285,6 @@
     let uploadedFiles = [];
     let allMaterials = [];
     let chatMessages = [];
-    let groupChatMessages = [];
     let studyGroups = [];
     let currentGroupName = 'אורח';
 
@@ -579,41 +557,6 @@
       if (e.key === 'Enter') sendMessage();
     });
 
-    function setGroupName() {
-      let name = document.getElementById('groupName').value.trim();
-      if (name) {
-        currentGroupName = name;
-        document.getElementById('groupName').value = '';
-        alert('✅ שמך הוגדר ל: ' + currentGroupName);
-      }
-    }
-
-    function sendGroupMessage() {
-      let text = document.getElementById('groupChatInput').value.trim();
-      if (!text) return;
-      
-      let messagesDiv = document.getElementById('groupChatMessages');
-      
-      let userMsg = document.createElement('div');
-      userMsg.className = 'message user';
-      userMsg.textContent = '👤 ' + currentGroupName + ': ' + text;
-      userMsg.style.alignSelf = 'flex-start';
-      messagesDiv.appendChild(userMsg);
-      
-      groupChatMessages.push({
-        user: currentGroupName,
-        text: text,
-        time: new Date().toLocaleTimeString('he-IL')
-      });
-      
-      document.getElementById('groupChatInput').value = '';
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    document.getElementById('groupChatInput').addEventListener('keypress', e => {
-      if (e.key === 'Enter') sendGroupMessage();
-    });
-
     function createStudyGroup() {
       let name = document.getElementById('newGroupName').value.trim();
       let topic = document.getElementById('newGroupTopic').value.trim();
@@ -780,11 +723,6 @@
       welcome.className = 'message trainer';
       welcome.textContent = '🧑‍🏫 שלום! אני המאמן שלך. העלאו קבצי חומר ואני אחפש תשובות בחומרים! 📚';
       document.getElementById('chatMessages').appendChild(welcome);
-      
-      let groupWelcome = document.createElement('div');
-      groupWelcome.className = 'message trainer';
-      groupWelcome.textContent = '👥 ברוכים הבאים לצ\'אט הקבוצתי! 🎓';
-      document.getElementById('groupChatMessages').appendChild(groupWelcome);
       
       displayStudyGroups();
     });
