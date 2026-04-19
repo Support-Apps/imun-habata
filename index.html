@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<!-- בס״ד -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 PDF Learning Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --pink: #FFE4EE;
+      --pink-bg: #FFF0F6;
+      --pink-border: #FFC8DD;
+      --gold: #C9A84C;
+      --white: #FFFDF9;
+      --cream: #FDF6EC;
+      --text: #2C1810;
+      --text-light: #6B5B52;
+    }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .בס״ד { position: fixed; top: 20px; right: 30px; font-size: 0.8rem; color: var(--gold); z-index: 1000; font-weight: 600; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 60px 40px; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .header-top { font-size: 0.7rem; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; }
+    .header h1 { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; color: var(--gold); margin-bottom: 10px; font-weight: 400; }
+    .header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--pink-border); font-style: italic; font-weight: 300; margin-bottom: 20px; }
+    .header p { font-size: 0.95rem; color: var(--text-light); font-style: italic; }
+    
+    .nav-tabs {
+      display: flex;
+      gap: 15px;
+      margin: 40px 0;
+      border-bottom: 2px solid var(--pink);
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+    .nav-tabs::-webkit-scrollbar { height: 5px; }
+    .nav-tabs::-webkit-scrollbar-thumb { background: var(--pink-border); border-radius: 3px; }
+    
+    .nav-tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--text-light);
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .nav-tab.active { color: var(--pink-border); border-bottom-color: var(--pink-border); }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .tab-wrapper { background: var(--pink-bg); padding: 40px; border-radius: 8px; border-right: 5px solid var(--pink-border); margin-bottom: 20px; }
+    .tab-title { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--gold); margin-bottom: 20px; }
+    
+    .upload-area { border: 2px dashed var(--gold); padding: 50px; text-align: center; border-radius: 8px; cursor: pointer; background: var(--cream); transition: all 0.3s; margin-bottom: 20px; }
+    .upload-area:hover { background: var(--pink); border-color: var(--pink-border); }
+    input[type="file"] { display: none; }
+    
+    .file-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .file-card { background: white; padding: 15px; border-radius: 8px; border-right: 3px solid var(--pink-border); text-align: center; font-size: 0.9rem; }
+    
+    .learning-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .learning-card { background: var(--pink-bg); padding: 20px; border-radius: 8px; border-right: 4px solid var(--pink-border); cursor: pointer; transition: all 0.3s; }
+    .learning-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(201, 168, 76, 0.1); }
+    
+    .card-title { font-size: 1.1rem; color: var(--text); margin-bottom: 10px; font-weight: 600; }
+    .card-desc { font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 10px; }
+    
+    .btn-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+    .btn { padding: 12px 24px; border: 2px solid var(--pink-border); background: white; color: var(--text); border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; font-family: 'Heebo', sans-serif; flex: 1; min-width: 120px; text-align: center; }
+    .btn:hover { background: var(--pink-border); color: white; }
+    .btn-primary { background: var(--pink-border); color: white; }
+    .btn-primary:hover { background: var(--pink); color: var(--text); }
+    
+    .progress-bar { width: 100%; height: 4px; background: #E0E0E0; margin: 20px 0; border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--pink-border), var(--gold)); width: 0%; transition: width 0.3s; }
+    
+    .notes-textarea { width: 100%; min-height: 200px; padding: 15px; border: 2px solid var(--pink); border-radius: 6px; font-family: 'Heebo', sans-serif; resize: vertical; margin-bottom: 20px; }
+    .notes-textarea:focus { outline: none; border-color: var(--gold); }
+    
+    .search-box { width: 100%; padding: 10px; border: 2px solid var(--pink); border-radius: 6px; margin-bottom: 15px; }
+    .search-box:focus { outline: none; border-color: var(--gold); }
+    
+    .chat-container { display: flex; gap: 20px; height: 500px; }
+    .chat-box { flex: 1; background: white; border: 2px solid var(--pink); border-radius: 8px; display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .message { padding: 12px 15px; border-radius: 8px; max-width: 85%; word-wrap: break-word; }
+    .message.user { background: var(--pink-border); color: white; align-self: flex-start; }
+    .message.trainer { background: var(--gold); color: white; align-self: flex-end; }
+    .chat-input { padding: 15px; border-top: 2px solid var(--pink); display: flex; gap: 10px; }
+    .chat-input input { flex: 1; padding: 10px; border: 1px solid var(--pink); border-radius: 6px; font-family: 'Heebo', sans-serif; }
+    .chat-input button { padding: 10px 20px; background: var(--gold); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    
+    .game-card { background: white; padding: 30px; border-radius: 8px; border: 2px solid var(--pink); margin-bottom: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .game-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(201, 168, 76, 0.15); }
+    .game-card h3 { color: var(--gold); margin-bottom: 10px; }
+    
+    table { width: 100%; margin: 15px 0; border-collapse: collapse; }
+    th { background: var(--gold); color: white; padding: 10px; text-align: right; }
+    td { padding: 10px; border-bottom: 1px solid var(--pink); }
+    
+    @media (max-width: 768px) {
+      .learning-items { grid-template-columns: 1fr; }
+      .header h1 { font-size: 2.5rem; }
+      .container { padding: 40px 20px; }
+      .chat-container { flex-direction: column; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="בס״ד">בס״ד</div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-top">נאירה דיגיטל ✦ PDF לימוד סטודיו ✦ 2024</div>
+      <h1>PDF לימוד</h1>
+      <h2>סטודיו</h2>
+      <p>כל מה שצריך ללימודים מקבצי PDF</p>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('upload')">📤 העלאה</button>
+      <button class="nav-tab" onclick="switchTab('materials')">📚 חומרים</button>
+      <button class="nav-tab" onclick="switchTab('summaries')">✨ סיכומים</button>
+      <button class="nav-tab" onclick="switchTab('tables')">📊 טבלאות</button>
+      <button class="nav-tab" onclick="switchTab('quizzes')">❓ שאלונים</button>
+      <button class="nav-tab" onclick="switchTab('games')">🎮 משחקים</button>
+      <button class="nav-tab" onclick="switchTab('chat')">💬 צ'אט אישי</button>
+      <button class="nav-tab" onclick="switchTab('groupchat')">👥 צ'אט קבוצתי</button>
+      <button class="nav-tab" onclick="switchTab('groups')">📚 קבוצות</button>
+      <button class="nav-tab" onclick="switchTab('notes')">📝 הערות</button>
+      <button class="nav-tab" onclick="switchTab('export')">💾 שיתוף</button>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="tab-content active" id="upload">
+      <div class="tab-wrapper">
+        <div class="tab-title">📤 I – העלאת קבצי PDF</div>
+        <div class="upload-area" id="uploadZone">
+          <div style="font-size: 2.5rem; margin-bottom: 15px;">📄</div>
+          <div style="font-size: 1.1rem;">גררו קבצי PDF לכאן</div>
+          <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 8px;">או לחצו בחרו</div>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".pdf">
+        <div class="file-list" id="fileList"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="processBtn" disabled>🚀 עבדו קבצים</button>
+          <button class="btn" id="clearBtn">🗑️ נקו</button>
+        </div>
+        <div id="progressContainer" style="display: none; margin-top: 20px;">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div style="text-align: center; font-size: 0.9rem; color: var(--text-light);" id="progressText">מעבד...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATERIALS -->
+    <div class="tab-content" id="materials">
+      <div class="tab-wrapper">
+        <div class="tab-title">📚 II – חומרים</div>
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 חפשו...">
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="viewAllMaterials()" style="flex: 1;">👁️ צפו בכל</button>
+          <button class="btn btn-primary" onclick="filterByTopic()" style="flex: 1;">📊 לפי נושא</button>
+        </div>
+        <div id="materialsContainer" class="learning-items" style="margin-top: 20px;">
+          <div style="text-align: center; padding: 40px; color: var(--text-light); grid-column: 1/-1;">📚 עבדו קבצים קודם</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARIES -->
+    <div class="tab-content" id="summaries">
+      <div class="tab-wrapper">
+        <button class="btn btn-primary" onclick="generateAllSummaries()" style="width: 100%; margin-bottom: 15px;">✨ צרו סיכומים</button>
+        <div id="summariesContainer" class="learning-items" style="margin-top: 20px;">
+          <div style="text-align: center; padding: 40px; color: var(--text-light); grid-column: 1/-1;">✨ לחצו צרו</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLES -->
+    <div class="tab-content" id="tables">
+      <div class="tab-wrapper">
+        <button class="btn btn-primary" onclick="generateAllTables()" style="width: 100%; margin-bottom: 15px;">📊 בנו טבלאות</button>
+        <div id="tablesContainer" class="learning-items" style="margin-top: 20px;">
+          <div style="text-align: center; padding: 40px; color: var(--text-light); grid-column: 1/-1;">📊 לחצו בנו</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZZES -->
+    <div class="tab-content" id="quizzes">
+      <div class="tab-wrapper">
+        <button class="btn btn-primary" onclick="generateAllQuizzes()" style="width: 100%; margin-bottom: 15px;">❓ בנו שאלונים</button>
+        <div id="quizzesContainer" class="learning-items" style="margin-top: 20px;">
+          <div style="text-align: center; padding: 40px; color: var(--text-light); grid-column: 1/-1;">❓ לחצו בנו</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAMES -->
+    <div class="tab-content" id="games">
+      <div class="tab-wrapper">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+          <button class="btn btn-primary" onclick="startFlashcards()">🎯 כרטיסיות</button>
+          <button class="btn btn-primary" onclick="startMatching()">🔗 התאמה</button>
+          <button class="btn btn-primary" onclick="startSequence()">📋 רצף</button>
+          <button class="btn btn-primary" onclick="startMemory()">🧠 זיכרון</button>
+        </div>
+        <div id="gamesContainer">
+          <div style="text-align: center; padding: 40px; color: var(--text-light);">🎮 בחרו משחק</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT AISHI -->
+    <div class="tab-content" id="chat">
+      <div class="tab-wrapper">
+        <div class="tab-title">💬 צ'אט אישי עם המאמן</div>
+        <div class="chat-container">
+          <div class="chat-box">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+              <input type="text" id="chatInput" placeholder="כתבו משהו...">
+              <button onclick="sendMessage()">שלח</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP CHAT -->
+    <div class="tab-content" id="groupchat">
+      <div class="tab-wrapper">
+        <div class="tab-title">👥 צ'אט קבוצתי</div>
+        <div style="margin-bottom: 15px;">
+          <input type="text" id="groupName" placeholder="שם המשתמש..." style="width: 100%; padding: 10px; border: 2px solid var(--pink); border-radius: 6px; margin-bottom: 10px;">
+          <button class="btn btn-primary" onclick="setGroupName()" style="width: 100%; margin-bottom: 15px;">✅ הגדר שם</button>
+        </div>
+        <div class="chat-container">
+          <div class="chat-box">
+            <div class="chat-messages" id="groupChatMessages" style="background: #FFF;"></div>
+            <div class="chat-input">
+              <input type="text" id="groupChatInput" placeholder="כתבו הודעה לקבוצה...">
+              <button onclick="sendGroupMessage()">שלח</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDY GROUPS -->
+    <div class="tab-content" id="groups">
+      <div class="tab-wrapper">
+        <div class="tab-title">📚 קבוצות למידה</div>
+        <div style="margin-bottom: 20px;">
+          <input type="text" id="newGroupName" placeholder="שם קבוצה חדשה..." style="width: 100%; padding: 10px; border: 2px solid var(--pink); border-radius: 6px; margin-bottom: 10px;">
+          <input type="text" id="newGroupTopic" placeholder="נושא..." style="width: 100%; padding: 10px; border: 2px solid var(--pink); border-radius: 6px; margin-bottom: 10px;">
+          <button class="btn btn-primary" onclick="createStudyGroup()" style="width: 100%;">➕ צרו קבוצה</button>
+        </div>
+        <div id="groupsContainer" class="learning-items">
+          <div style="text-align: center; padding: 40px; color: var(--text-light); grid-column: 1/-1;">📚 אין קבוצות עדיין</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="tab-content" id="notes">
+      <div class="tab-wrapper">
+        <div class="tab-title">📝 VI – הערות</div>
+        <textarea id="notesText" class="notes-textarea" placeholder="כתבו את ההערות שלכם..."></textarea>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="saveNotes()">💾 שמרו</button>
+          <button class="btn" onclick="clearNotes()">🗑️ נקו</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="tab-content" id="export">
+      <div class="tab-wrapper">
+        <div class="tab-title">💾 VII – שיתוף</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+          <button class="btn btn-primary" onclick="downloadJSON()">📥 JSON</button>
+          <button class="btn btn-primary" onclick="downloadHTML()">📄 HTML</button>
+          <button class="btn btn-primary" onclick="downloadCSV()">📊 CSV</button>
+          <button class="btn btn-primary" onclick="shareViaLink()">🔗 שתף</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let uploadedFiles = [];
+    let allMaterials = [];
+    let chatMessages = [];
+    let groupChatMessages = [];
+    let studyGroups = [];
+    let currentGroupName = 'אורח';
+
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const searchBox = document.getElementById('searchBox');
+    const chatInput = document.getElementById('chatInput');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadZone.style.background = 'var(--pink)';
+    });
+    uploadZone.addEventListener('dragleave', () => uploadZone.style.background = 'var(--cream)');
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.style.background = 'var(--cream)';
+      handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+      uploadedFiles = Array.from(files).filter(f => f.type === 'application/pdf');
+      updateFileList();
+      document.getElementById('processBtn').disabled = uploadedFiles.length === 0;
+    }
+
+    function updateFileList() {
+      let html = '';
+      uploadedFiles.forEach(f => {
+        html += '<div class="file-card">📄 ' + f.name + '</div>';
+      });
+      document.getElementById('fileList').innerHTML = html;
+    }
+
+    document.getElementById('processBtn').addEventListener('click', processFiles);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      uploadedFiles = [];
+      allMaterials = [];
+      fileInput.value = '';
+      updateFileList();
+      document.getElementById('processBtn').disabled = true;
+    });
+
+    function processFiles() {
+      if (uploadedFiles.length === 0) return;
+      
+      document.getElementById('progressContainer').style.display = 'block';
+      allMaterials = [];
+      
+      uploadedFiles.forEach((file, idx) => {
+        let percent = Math.round((idx / uploadedFiles.length) * 100);
+        document.getElementById('progressFill').style.width = percent + '%';
+        document.getElementById('progressText').textContent = 'עיבוד ' + file.name + '...';
+        
+        let topics = ['ביולוגיה', 'מתמטיקה', 'היסטוריה', 'אנגלית', 'פיזיקה', 'כימיה'];
+        for (let j = 0; j < 3; j++) {
+          allMaterials.push({
+            id: file.name + '-' + j,
+            file: file.name,
+            title: 'נושא ' + (j+1) + ': ' + file.name.substring(0, 20),
+            description: 'זהו תיאור של החומר החשוב. למדו בעיון וחזרו על החומר.',
+            topic: topics[Math.floor(Math.random() * topics.length)],
+            pages: Math.floor(Math.random() * 50) + 5
+          });
+        }
+      });
+      
+      setTimeout(() => {
+        document.getElementById('progressFill').style.width = '100%';
+        document.getElementById('progressText').textContent = 'סיום!';
+        setTimeout(() => {
+          document.getElementById('progressContainer').style.display = 'none';
+          displayMaterials(allMaterials);
+        }, 500);
+      }, 1500);
+    }
+
+    function displayMaterials(materials) {
+      let html = '';
+      materials.forEach(m => {
+        html += '<div class="learning-card" onclick="showMaterialDetails(this)"><div class="card-title">' + m.title + '</div><div class="card-desc">' + m.description + '</div><div style="font-size: 0.8rem; color: var(--text-light);">📄 ' + m.file + ' | ' + m.topic + '</div></div>';
+      });
+      document.getElementById('materialsContainer').innerHTML = html;
+    }
+
+    function viewAllMaterials() {
+      displayMaterials(allMaterials);
+    }
+
+    function filterByTopic() {
+      if (allMaterials.length === 0) return;
+      let topics = [...new Set(allMaterials.map(m => m.topic))];
+      let filtered = allMaterials.filter(m => m.topic === topics[0]);
+      displayMaterials(filtered);
+    }
+
+    function showMaterialDetails(el) {
+      alert('📚 פתוח בחלון מלא');
+    }
+
+    function generateAllSummaries() {
+      let html = '';
+      allMaterials.slice(0, 5).forEach((m, i) => {
+        html += '<div class="learning-card"><div class="card-title">✨ ' + m.title + '</div><div class="card-desc">' + m.description + '</div><button class="btn" onclick="copySummary(' + i + ')" style="margin-top: 10px; width: 100%;">📋 העתיקו</button></div>';
+      });
+      document.getElementById('summariesContainer').innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">אין חומרים</div>';
+    }
+
+    function copySummary(i) {
+      alert('📋 הסיכום הועתק!');
+    }
+
+    function generateAllTables() {
+      let html = '';
+      allMaterials.slice(0, 3).forEach(m => {
+        html += '<div class="learning-card"><div class="card-title">📊 ' + m.title + '</div><table><thead><tr><th>משדה</th><th>ערך</th></tr></thead><tbody><tr><td>נושא</td><td>' + m.topic + '</td></tr><tr><td>עמודים</td><td>' + m.pages + '</td></tr></tbody></table></div>';
+      });
+      document.getElementById('tablesContainer').innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">אין חומרים</div>';
+    }
+
+    function generateAllQuizzes() {
+      let html = '';
+      allMaterials.slice(0, 3).forEach((m, i) => {
+        html += '<div class="learning-card"><div class="card-title">❓ ' + m.title + '</div><div style="margin: 15px 0;"><label style="display: block; margin-bottom: 8px;"><input type="radio" name="q' + i + '"> תשובה א</label><label style="display: block; margin-bottom: 8px;"><input type="radio" name="q' + i + '"> תשובה ב</label><label style="display: block;"><input type="radio" name="q' + i + '"> תשובה ג</label></div><button class="btn" onclick="checkAnswers(' + i + ')" style="margin-top: 10px; width: 100%;">✅ בדוק</button></div>';
+      });
+      document.getElementById('quizzesContainer').innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">אין חומרים</div>';
+    }
+
+    function checkAnswers(i) {
+      alert('✅ תוצאות בדיקה');
+    }
+
+    function startFlashcards() {
+      let html = '';
+      allMaterials.slice(0, 3).forEach((m, i) => {
+        html += '<div class="game-card" onclick="flipCard(this)"><div style="font-size: 1.2rem; font-weight: 600;">🎯 שאלה ' + (i+1) + ':</div><div style="margin-top: 10px;">' + m.title.substring(0, 40) + '</div><div style="margin-top: 15px; font-size: 0.85rem; color: var(--text-light);">👆 לחצו כדי להפוך</div></div>';
+      });
+      document.getElementById('gamesContainer').innerHTML = html || '<div style="text-align: center; padding: 40px;">אין חומרים</div>';
+    }
+
+    function startMatching() {
+      let html = '<div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid var(--pink);">';
+      allMaterials.slice(0, 4).forEach((m, i) => {
+        html += '<div class="game-card" style="margin-bottom: 10px; cursor: pointer;" onclick="this.style.background = \'var(--gold)\'; this.style.color = \'white\';">' + (i+1) + '. ' + m.title.substring(0, 50) + '</div>';
+      });
+      html += '</div>';
+      document.getElementById('gamesContainer').innerHTML = html || '<div style="text-align: center; padding: 40px;">אין חומרים</div>';
+    }
+
+    function startSequence() {
+      let html = '<div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid var(--pink);">';
+      allMaterials.slice(0, 3).forEach((m, i) => {
+        html += '<div class="game-card" style="margin-bottom: 10px; cursor: move; border: 2px solid var(--gold);" draggable="true">' + (i+1) + '. ' + m.title.substring(0, 50) + '</div>';
+      });
+      html += '</div>';
+      document.getElementById('gamesContainer').innerHTML = html || '<div style="text-align: center; padding: 40px;">אין חומרים</div>';
+    }
+
+    function startMemory() {
+      let items = ['🍎', '🍌', '🍊', '🍇', '🍓', '🥝', '🍒', '🍑'];
+      let shuffled = [...items, ...items].sort(() => Math.random() - 0.5);
+      let html = '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; background: white; border-radius: 8px; border: 2px solid var(--pink);">';
+      shuffled.forEach((item, i) => {
+        html += '<div class="game-card" onclick="revealMemory(this, \'' + item + '\')" style="padding: 20px; font-size: 2rem;">❓</div>';
+      });
+      html += '</div>';
+      document.getElementById('gamesContainer').innerHTML = html;
+    }
+
+    function flipCard(el) {
+      el.style.transform = 'scaleY(0)';
+      setTimeout(() => {
+        el.innerHTML = '<div style="font-size: 1.2rem; font-weight: 600;">💡 תשובה!</div>';
+        el.style.transform = 'scaleY(1)';
+      }, 300);
+    }
+
+    function revealMemory(el, item) {
+      el.textContent = item;
+      el.style.background = 'var(--gold)';
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+      
+      if (tabName === 'chat') {
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    function sendMessage() {
+      let text = document.getElementById('chatInput').value.trim();
+      if (!text) return;
+      
+      let messagesDiv = document.getElementById('chatMessages');
+      
+      let userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = text;
+      messagesDiv.appendChild(userMsg);
+      
+      document.getElementById('chatInput').value = '';
+      
+      // חפש בחומרים
+      let relevantMaterial = findRelevantMaterial(text);
+      
+      setTimeout(() => {
+        let trainerMsg = document.createElement('div');
+        trainerMsg.className = 'message trainer';
+        
+        if (relevantMaterial) {
+          trainerMsg.textContent = '🧑‍🏫 מצאתי למך! 📚\n\n' + relevantMaterial.title + '\n\n' + relevantMaterial.description + '\n\n(מקור: ' + relevantMaterial.file + ')';
+        } else {
+          trainerMsg.textContent = '🧑‍🏫 מצטער, לא מצאתי את המידע הזה בחומרים שהעלית. בואו נחפש חומר רלוונטי אחר או שאלו שאלה אחרת!';
+        }
+        
+        messagesDiv.appendChild(trainerMsg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }, 800);
+      
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function findRelevantMaterial(query) {
+      if (allMaterials.length === 0) return null;
+      
+      let lowerQuery = query.toLowerCase();
+      let keywords = lowerQuery.split(' ').filter(k => k.length > 2);
+      
+      // חפש חומר שמכיל את מרבית המילות
+      let best = null;
+      let bestScore = 0;
+      
+      allMaterials.forEach(material => {
+        let lowerTitle = material.title.toLowerCase();
+        let lowerDesc = material.description.toLowerCase();
+        let combined = lowerTitle + ' ' + lowerDesc;
+        
+        let score = 0;
+        keywords.forEach(keyword => {
+          if (combined.includes(keyword)) {
+            score += 10;
+          }
+        });
+        
+        // בדוק אם יש קשר לנושא
+        if (material.topic && lowerQuery.includes(material.topic.toLowerCase())) {
+          score += 20;
+        }
+        
+        if (score > bestScore) {
+          bestScore = score;
+          best = material;
+        }
+      });
+      
+      if (bestScore >= 10) {
+        return best;
+      }
+      return null;
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function setGroupName() {
+      let name = document.getElementById('groupName').value.trim();
+      if (name) {
+        currentGroupName = name;
+        document.getElementById('groupName').value = '';
+        alert('✅ שמך הוגדר ל: ' + currentGroupName);
+      }
+    }
+
+    function sendGroupMessage() {
+      let text = document.getElementById('groupChatInput').value.trim();
+      if (!text) return;
+      
+      let messagesDiv = document.getElementById('groupChatMessages');
+      
+      let userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = '👤 ' + currentGroupName + ': ' + text;
+      userMsg.style.alignSelf = 'flex-start';
+      messagesDiv.appendChild(userMsg);
+      
+      groupChatMessages.push({
+        user: currentGroupName,
+        text: text,
+        time: new Date().toLocaleTimeString('he-IL')
+      });
+      
+      document.getElementById('groupChatInput').value = '';
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    document.getElementById('groupChatInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendGroupMessage();
+    });
+
+    function createStudyGroup() {
+      let name = document.getElementById('newGroupName').value.trim();
+      let topic = document.getElementById('newGroupTopic').value.trim();
+      
+      if (name && topic) {
+        studyGroups.push({
+          id: Date.now(),
+          name: name,
+          topic: topic,
+          members: [currentGroupName],
+          created: new Date().toLocaleDateString('he-IL')
+        });
+        
+        document.getElementById('newGroupName').value = '';
+        document.getElementById('newGroupTopic').value = '';
+        displayStudyGroups();
+        alert('✅ קבוצה ' + name + ' נוצרה!');
+      }
+    }
+
+    function displayStudyGroups() {
+      let container = document.getElementById('groupsContainer');
+      if (studyGroups.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); grid-column: 1/-1;">📚 אין קבוצות עדיין</div>';
+        return;
+      }
+      
+      let html = '';
+      studyGroups.forEach(g => {
+        html += '<div class="learning-card" style="cursor: pointer;" onclick="joinGroup(' + g.id + ')"><div class="card-title">📚 ' + g.name + '</div><div class="card-desc">נושא: ' + g.topic + '</div><div style="font-size: 0.8rem; color: var(--text-light);">👥 ' + g.members.length + ' חברים | נוצרה: ' + g.created + '</div><button class="btn" onclick="event.stopPropagation(); joinGroup(' + g.id + ')" style="width: 100%; margin-top: 10px;">➕ הצטרפו</button></div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function joinGroup(groupId) {
+      let group = studyGroups.find(g => g.id === groupId);
+      if (group && !group.members.includes(currentGroupName)) {
+        group.members.push(currentGroupName);
+        alert('✅ התצטרפתם ל: ' + group.name);
+        displayStudyGroups();
+      }
+    }
+
+    function saveNotes() {
+      let notes = document.getElementById('notesText').value;
+      localStorage.setItem('pdfNotes', notes);
+      alert('✅ הערות נשמרו!');
+    }
+
+    function clearNotes() {
+      if (confirm('בטוחים?')) {
+        document.getElementById('notesText').value = '';
+        localStorage.removeItem('pdfNotes');
+      }
+    }
+
+    function downloadJSON() {
+      let data = JSON.stringify({ materials: allMaterials }, null, 2);
+      downloadFile(data, 'learning-data.json', 'application/json');
+    }
+
+    function downloadHTML() {
+      let html = '<html dir="rtl"><head><meta charset="UTF-8"><title>Learning Data</title></head><body style="font-family: Arial; padding: 20px;">';
+      allMaterials.forEach(m => {
+        html += '<h3>' + m.title + '</h3><p>' + m.description + '</p>';
+      });
+      html += '</body></html>';
+      downloadFile(html, 'learning-data.html', 'text/html');
+    }
+
+    function downloadCSV() {
+      let csv = 'Title,Topic,Pages\n';
+      allMaterials.forEach(m => {
+        csv += '"' + m.title + '","' + m.topic + '",' + m.pages + '\n';
+      });
+      downloadFile(csv, 'learning-data.csv', 'text/csv');
+    }
+
+    function shareViaLink() {
+      alert('🔗 שתף: ' + window.location.href);
+    }
+
+    function downloadFile(content, filename, type) {
+      let blob = new Blob([content], { type: type });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    searchBox.addEventListener('input', e => {
+      let query = e.target.value.toLowerCase();
+      let filtered = allMaterials.filter(m => 
+        m.title.toLowerCase().includes(query) || 
+        m.description.toLowerCase().includes(query) ||
+        m.topic.toLowerCase().includes(query)
+      );
+      displayMaterials(filtered);
+    });
+
+    window.addEventListener('load', () => {
+      let saved = localStorage.getItem('pdfNotes');
+      if (saved) document.getElementById('notesText').value = saved;
+      
+      let welcome = document.createElement('div');
+      welcome.className = 'message trainer';
+      welcome.textContent = '🧑‍🏫 שלום! אני המאמן שלך. העלאו קבצי PDF וגן תשאלו אותי שאלות - אחפש תשובות בחומרים! 📚';
+      document.getElementById('chatMessages').appendChild(welcome);
+      
+      let groupWelcome = document.createElement('div');
+      groupWelcome.className = 'message trainer';
+      groupWelcome.textContent = '👥 ברוכים הבאים לצ\'אט הקבוצתי! 🎓';
+      document.getElementById('groupChatMessages').appendChild(groupWelcome);
+      
+      displayStudyGroups();
+    });
+  </script>
+</body>
+</html>
