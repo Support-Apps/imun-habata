@@ -123,10 +123,10 @@
 
   <div class="container">
     <div class="header">
-      <div class="header-top">נאירה דיגיטל ✦ PDF לימוד סטודיו ✦ 2024</div>
-      <h1>PDF לימוד</h1>
-      <h2>סטודיו</h2>
-      <p>כל מה שצריך ללימודים מקבצי PDF</p>
+      <div class="header-top">נאירה דיגיטל ✦ סטודיו לימוד ✦ 2026</div>
+      <h1>סטודיו</h1>
+      <h2>לימוד</h2>
+      <p>כל מה שצריך ללימודים מקבצי חומר</p>
     </div>
 
     <div class="nav-tabs">
@@ -146,7 +146,7 @@
     <!-- UPLOAD -->
     <div class="tab-content active" id="upload">
       <div class="tab-wrapper">
-        <div class="tab-title">📤 I – העלאת קבצי PDF</div>
+        <div class="tab-title">📤 I – העלאת קבצים</div>
         <div class="upload-area" id="uploadZone">
           <div style="font-size: 2.5rem; margin-bottom: 15px;">📄</div>
           <div style="font-size: 1.1rem;">גררו קבצי PDF לכאן</div>
@@ -618,20 +618,26 @@
       let name = document.getElementById('newGroupName').value.trim();
       let topic = document.getElementById('newGroupTopic').value.trim();
       
-      if (name && topic) {
-        studyGroups.push({
-          id: Date.now(),
-          name: name,
-          topic: topic,
-          members: [currentGroupName],
-          created: new Date().toLocaleDateString('he-IL')
-        });
-        
-        document.getElementById('newGroupName').value = '';
-        document.getElementById('newGroupTopic').value = '';
-        displayStudyGroups();
-        alert('✅ קבוצה ' + name + ' נוצרה!');
+      if (!name || !topic) {
+        alert('❌ בואו מלאו את שם הקבוצה והנושא!');
+        return;
       }
+      
+      let newGroup = {
+        id: Date.now(),
+        name: name,
+        topic: topic,
+        members: [currentGroupName],
+        created: new Date().toLocaleDateString('he-IL', { year: 'numeric', month: '2-digit', day: '2-digit' })
+      };
+      
+      studyGroups.push(newGroup);
+      
+      document.getElementById('newGroupName').value = '';
+      document.getElementById('newGroupTopic').value = '';
+      
+      displayStudyGroups();
+      alert('✅ קבוצה "' + name + '" נוצרה בהצלחה!');
     }
 
     function displayStudyGroups() {
@@ -643,7 +649,27 @@
       
       let html = '';
       studyGroups.forEach(g => {
-        html += '<div class="learning-card" style="cursor: pointer;" onclick="joinGroup(' + g.id + ')"><div class="card-title">📚 ' + g.name + '</div><div class="card-desc">נושא: ' + g.topic + '</div><div style="font-size: 0.8rem; color: var(--text-light);">👥 ' + g.members.length + ' חברים | נוצרה: ' + g.created + '</div><button class="btn" onclick="event.stopPropagation(); joinGroup(' + g.id + ')" style="width: 100%; margin-top: 10px;">➕ הצטרפו</button></div>';
+        let isMember = g.members.includes(currentGroupName);
+        let memberList = g.members.join(', ');
+        let whatsappLink = 'https://wa.me/?text=' + encodeURIComponent('בואו נצטרף לקבוצת למידה: ' + g.name + ' 📚\nנושא: ' + g.topic + '\n\nחברים: ' + memberList + '\n\nקבוצה נוצרה ב: ' + g.created);
+        
+        html += '<div class="learning-card">' +
+          '<div class="card-title">📚 ' + g.name + '</div>' +
+          '<div class="card-desc">נושא: <strong>' + g.topic + '</strong></div>' +
+          '<div style="background: var(--cream); padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.85rem;">' +
+          '<div style="margin-bottom: 8px;"><strong>👥 חברים:</strong></div>' +
+          '<div style="color: var(--text-light);">' + memberList + '</div>' +
+          '</div>' +
+          '<div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 10px;">📅 נוצרה: ' + g.created + '</div>' +
+          '<div class="btn-group" style="gap: 8px;">' +
+          (isMember ? 
+            '<button class="btn" onclick="leaveGroup(' + g.id + ')" style="flex: 1;">❌ עזבו</button>' :
+            '<button class="btn btn-primary" onclick="joinGroup(' + g.id + ')" style="flex: 1;">➕ הצטרפו</button>'
+          ) +
+          '<button class="btn" onclick="window.open(\'' + whatsappLink + '\', \'_blank\')" style="flex: 1;">💬 WhatsApp</button>' +
+          '<button class="btn" onclick="shareGroupLink(' + g.id + ')" style="flex: 1;">🔗 שתף</button>' +
+          '</div>' +
+          '</div>';
       });
       container.innerHTML = html;
     }
@@ -654,6 +680,36 @@
         group.members.push(currentGroupName);
         alert('✅ התצטרפתם ל: ' + group.name);
         displayStudyGroups();
+      }
+    }
+
+    function leaveGroup(groupId) {
+      let group = studyGroups.find(g => g.id === groupId);
+      if (group) {
+        group.members = group.members.filter(m => m !== currentGroupName);
+        alert('👋 עזבתם את: ' + group.name);
+        displayStudyGroups();
+      }
+    }
+
+    function shareGroupLink(groupId) {
+      let group = studyGroups.find(g => g.id === groupId);
+      if (group) {
+        let link = window.location.href + '?group=' + groupId + '&name=' + group.name;
+        let text = 'קבוצת למידה: ' + group.name + '\nנושא: ' + group.topic + '\nחברים: ' + group.members.length;
+        
+        if (navigator.share) {
+          navigator.share({
+            title: group.name,
+            text: text,
+            url: link
+          }).catch(err => console.log('Share error:', err));
+        } else {
+          // Fallback - copy to clipboard
+          navigator.clipboard.writeText(link + '\n\n' + text).then(() => {
+            alert('🔗 הקישור והנתונים הועתקו!\n\n' + text);
+          });
+        }
       }
     }
 
@@ -722,7 +778,7 @@
       
       let welcome = document.createElement('div');
       welcome.className = 'message trainer';
-      welcome.textContent = '🧑‍🏫 שלום! אני המאמן שלך. העלאו קבצי PDF וגן תשאלו אותי שאלות - אחפש תשובות בחומרים! 📚';
+      welcome.textContent = '🧑‍🏫 שלום! אני המאמן שלך. העלאו קבצי חומר ואני אחפש תשובות בחומרים! 📚';
       document.getElementById('chatMessages').appendChild(welcome);
       
       let groupWelcome = document.createElement('div');
