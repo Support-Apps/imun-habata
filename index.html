@@ -299,7 +299,12 @@
 
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  </script>
+    
+    let uploadedFiles = [];
+    let allMaterials = [];
+    let chatMessages = [];
+    let studyGroups = [];
+    let currentGroupName = 'אורח';
     let currentPdfFile = null;
     let currentPdfDoc = null;
     let currentPage = 1;
