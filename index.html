@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>📚 PDF Learning Studio</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -151,7 +152,7 @@
           <div style="font-size: 1.1rem;">גררו תיקיה או קבצים לכאן</div>
           <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 8px;">או לחצו בחרו תיקיה</div>
         </div>
-        <input type="file" id="fileInput" multiple accept=".pdf" webkitdirectory directory>
+        <input type="file" id="fileInput" multiple accept=".pdf" webkitdirectory="" directory="">
         <div class="file-list" id="fileList"></div>
         <div class="btn-group">
           <button class="btn btn-primary" id="processBtn" disabled>🚀 עבדו קבצים</button>
@@ -278,12 +279,99 @@
     </div>
   </div>
 
+  <!-- PDF VIEWER MODAL -->
+  <div id="pdfModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; overflow: auto;">
+    <div style="background: white; margin: 20px auto; max-width: 95%; border-radius: 8px; padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 id="pdfTitle" style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--gold);">תצוגת מצגת</h2>
+        <button onclick="closePdfViewer()" style="background: #FFC8DD; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">✕ סגור</button>
+      </div>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <button onclick="prevPage()" style="padding: 8px 15px; margin-right: 10px; background: #FFC8DD; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">← הקודם</button>
+        <span id="pageInfo" style="margin: 0 15px; font-weight: 600;">עמוד 1</span>
+        <button onclick="nextPage()" style="padding: 8px 15px; margin-left: 10px; background: #FFC8DD; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">הבא →</button>
+      </div>
+      <div id="pdfContainer" style="text-align: center;">
+        <canvas id="pdfCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
   <script>
-    let uploadedFiles = [];
-    let allMaterials = [];
-    let chatMessages = [];
-    let studyGroups = [];
-    let currentGroupName = 'אורח';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+    let currentPdfFile = null;
+    let currentPdfDoc = null;
+    let currentPage = 1;
+
+    function openPdf(element) {
+      let filename = element.querySelector('.card-title').textContent.replace('📄 ', '');
+      let file = uploadedFiles.find(f => f.name === filename);
+      
+      if (!file) {
+        alert('❌ לא מצאתי את הקובץ');
+        return;
+      }
+      
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        pdfjsLib.getDocument(e.target.result).promise.then(function(pdf) {
+          currentPdfDoc = pdf;
+          currentPage = 1;
+          document.getElementById('pdfTitle').textContent = filename;
+          document.getElementById('pdfModal').style.display = 'block';
+          renderPage(1);
+        }).catch(function(err) {
+          alert('❌ שגיאה בטעינת המצגת: ' + err.message);
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function closePdfViewer() {
+      document.getElementById('pdfModal').style.display = 'none';
+      currentPdfDoc = null;
+      currentPage = 1;
+    }
+
+    function renderPage(pageNum) {
+      if (!currentPdfDoc) return;
+      
+      if (pageNum < 1 || pageNum > currentPdfDoc.numPages) return;
+      
+      currentPage = pageNum;
+      
+      currentPdfDoc.getPage(pageNum).then(function(page) {
+        let scale = 1.5;
+        let viewport = page.getViewport({ scale: scale });
+        let canvas = document.getElementById('pdfCanvas');
+        let context = canvas.getContext('2d');
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        let renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        
+        page.render(renderContext).promise.then(function() {
+          document.getElementById('pageInfo').textContent = 'עמוד ' + pageNum + ' מ-' + currentPdfDoc.numPages;
+        });
+      });
+    }
+
+    function nextPage() {
+      if (currentPdfDoc && currentPage < currentPdfDoc.numPages) {
+        renderPage(currentPage + 1);
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        renderPage(currentPage - 1);
+      }
+    }
 
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
@@ -358,7 +446,7 @@
     function displayMaterials(materials) {
       let html = '';
       materials.forEach(m => {
-        html += '<div class="learning-card"><div class="card-title">📄 ' + m.file + '</div><div class="card-desc">עמודים: ' + m.pages + '</div></div>';
+        html += '<div class="learning-card" style="cursor: pointer;" onclick="openPdf(this)"><div class="card-title">📄 ' + m.file + '</div><div class="card-desc">עמודים: ' + m.pages + '</div><div style="font-size: 0.8rem; color: var(--text-light);">👆 לחצו כדי לפתוח</div></div>';
       });
       document.getElementById('materialsContainer').innerHTML = html;
     }
