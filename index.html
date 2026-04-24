@@ -123,10 +123,11 @@ header{background:#FFE8F0;padding:16px 28px;display:flex;align-items:center;just
 .v-btn{padding:4px 10px;background:transparent;border:1px solid var(--gold);color:var(--dark);border-radius:3px;font-size:11px;cursor:pointer;font-family:'Heebo',sans-serif;transition:.2s}
 .v-btn:hover{background:var(--gold);color:var(--cream)}
 .v-info{color:var(--mid);font-size:11px;min-width:50px;text-align:center}
-.pdf-wrap{background:#555;border:2px solid var(--lg);border-top:none;border-radius:0 0 6px 6px;min-height:460px;overflow:auto;display:flex;justify-content:center;padding:16px}
-.pdf-wrap canvas{box-shadow:0 4px 16px rgba(0,0,0,.4);max-width:100%}
-.v-empty{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mid);gap:10px;background:var(--lg);border-radius:6px}
+.pdf-wrap{background:#555;border:2px solid var(--lg);border-top:none;border-radius:0 0 6px 6px;min-height:700px;overflow:auto;display:block;padding:0;width:100%;box-sizing:border-box}
+.pdf-wrap canvas{width:100% !important;height:auto !important;display:block;}
+.v-empty{width:100%;min-height:700px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ccc;gap:10px;background:#555 !important;}
 .v-empty span{font-size:40px}
+.v-empty p{font-size:14px;color:#ccc}
 /* CHAT / SEARCH */
 .ch-msgs{min-height:260px;max-height:420px;overflow-y:auto;background:white;border:2px solid var(--lg);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:9px;margin-bottom:9px}
 .ch-msg{display:flex;gap:8px;align-items:flex-start}
@@ -289,9 +290,11 @@ footer{text-align:center;padding:15px;border-top:2px solid var(--lg);font-size:1
         <div class="card-title">📖 צפייה ב-PDF</div>
         <div class="v-toolbar" id="vTB" style="display:none">
           <span class="v-lbl" id="vName">—</span>
-          <button class="v-btn" onclick="vPage(-1)">‹ הקודם</button>
+          <button class="v-btn" onclick="vPrevFile()">📄 ←</button>
+          <button class="v-btn" onclick="vNextFile()">→ 📄</button>
+          <button class="v-btn" onclick="vPage(-1)">‹ עמוד</button>
           <span class="v-info" id="vInfo">1/1</span>
-          <button class="v-btn" onclick="vPage(1)">הבא ›</button>
+          <button class="v-btn" onclick="vPage(1)">עמוד ›</button>
           <button class="v-btn" onclick="vZoom(-0.2)">− זום</button>
           <span class="v-info" id="vZoom">120%</span>
           <button class="v-btn" onclick="vZoom(0.2)">+ זום</button>
@@ -346,7 +349,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 
 // ── STATE ─────────────────────────────────────────────
 let files=[], curIdx=-1, questions=[], curQ=0, score=0, answered=false;
-let pdfDoc=null, pdfPage=1, pdfZoom=1.2;
+let pdfDoc=null, pdfPage=1, pdfZoom=2.2;
 const LETTERS=['א','ב','ג','ד'];
 
 // ── DRAG & DROP ───────────────────────────────────────
@@ -420,7 +423,12 @@ function goPage(id,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   btn.classList.add('on');
-  if(id==='pv'&&curIdx>=0)setTimeout(()=>loadViewer(curIdx),50);
+  // hide sidebar in viewer for max width
+  document.querySelector('.sidebar').style.display = id==='pv' ? 'none' : '';
+  if(id==='pv'){
+    const idx=curIdx>=0?curIdx:files.findIndex(f=>f.b64);
+    if(idx>=0)setTimeout(()=>loadViewer(idx),50);
+  }
   if(id==='pc')refreshChat();
 }
 
@@ -853,16 +861,29 @@ async function renderPDF(){
   document.getElementById('vInfo').textContent=`${pdfPage}/${tot}`;
   document.getElementById('vZoom').textContent=Math.round(pdfZoom*100)+'%';
   const page=await pdfDoc.getPage(pdfPage);
-  const vp=page.getViewport({scale:pdfZoom});
+  // calculate scale to fit full width
+  const wrap=document.getElementById('pdfWrap');
+  const availWidth=wrap.clientWidth - 40;
+  const viewport0=page.getViewport({scale:1});
+  const autoScale=availWidth/viewport0.width;
+  const scale=pdfZoom===2.2 ? autoScale : pdfZoom; // use auto on first render
+  const vp=page.getViewport({scale});
   const canvas=document.createElement('canvas');
   canvas.width=vp.width;canvas.height=vp.height;
+  canvas.style.width='100%';canvas.style.height='auto';
   await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-  const wrap=document.getElementById('pdfWrap');
   wrap.innerHTML='';wrap.appendChild(canvas);
 }
 
 async function vPage(d){pdfPage+=d;await renderPDF();}
 async function vZoom(d){pdfZoom=Math.max(0.4,Math.min(3,pdfZoom+d));await renderPDF();}
+
+function vPrevFile(){
+  if(curIdx>0){curIdx--;renderSB();loadViewer(curIdx);}
+}
+function vNextFile(){
+  if(curIdx<files.length-1){curIdx++;renderSB();loadViewer(curIdx);}
+}
 
 // ── SEARCH / CHAT ─────────────────────────────────────
 function refreshChat(){
