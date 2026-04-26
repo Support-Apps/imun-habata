@@ -290,14 +290,11 @@ footer{text-align:center;padding:15px;border-top:2px solid var(--lg);font-size:1
         <div class="card-title">📖 צפייה ב-PDF</div>
         <div class="v-toolbar" id="vTB" style="display:none">
           <button class="v-btn" onclick="vPrevFile()">קובץ קודם ›</button>
-          <span class="v-lbl" id="vName">—</span>
           <button class="v-btn" onclick="vNextFile()">‹ קובץ הבא</button>
+          <span class="v-lbl" id="vName" style="margin:0 12px">—</span>
           <button class="v-btn" onclick="vPage(-1)">עמוד קודם ›</button>
           <span class="v-info" id="vInfo">1/1</span>
           <button class="v-btn" onclick="vPage(1)">‹ עמוד הבא</button>
-          <button class="v-btn" onclick="vZoom(-0.25)">− זום</button>
-          <span class="v-info" id="vZoom">100%</span>
-          <button class="v-btn" onclick="vZoom(0.25)">+ זום</button>
         </div>
         <div class="pdf-wrap" id="pdfWrap"><div class="v-empty"><span>📄</span><p>בחרי קובץ מהרשימה</p></div></div>
       </div>
