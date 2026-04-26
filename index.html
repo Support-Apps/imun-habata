@@ -289,15 +289,15 @@ footer{text-align:center;padding:15px;border-top:2px solid var(--lg);font-size:1
       <div class="card" style="display:block">
         <div class="card-title">📖 צפייה ב-PDF</div>
         <div class="v-toolbar" id="vTB" style="display:none">
+          <button class="v-btn" onclick="vPrevFile()">קובץ קודם ›</button>
           <span class="v-lbl" id="vName">—</span>
-          <button class="v-btn" onclick="vPrevFile()">📄 ←</button>
-          <button class="v-btn" onclick="vNextFile()">→ 📄</button>
-          <button class="v-btn" onclick="vPage(-1)">‹ עמוד</button>
+          <button class="v-btn" onclick="vNextFile()">‹ קובץ הבא</button>
+          <button class="v-btn" onclick="vPage(-1)">עמוד קודם ›</button>
           <span class="v-info" id="vInfo">1/1</span>
-          <button class="v-btn" onclick="vPage(1)">עמוד ›</button>
-          <button class="v-btn" onclick="vZoom(-0.2)">− זום</button>
-          <span class="v-info" id="vZoom">120%</span>
-          <button class="v-btn" onclick="vZoom(0.2)">+ זום</button>
+          <button class="v-btn" onclick="vPage(1)">‹ עמוד הבא</button>
+          <button class="v-btn" onclick="vZoom(-0.25)">− זום</button>
+          <span class="v-info" id="vZoom">100%</span>
+          <button class="v-btn" onclick="vZoom(0.25)">+ זום</button>
         </div>
         <div class="pdf-wrap" id="pdfWrap"><div class="v-empty"><span>📄</span><p>בחרי קובץ מהרשימה</p></div></div>
       </div>
@@ -349,7 +349,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 
 // ── STATE ─────────────────────────────────────────────
 let files=[], curIdx=-1, questions=[], curQ=0, score=0, answered=false;
-let pdfDoc=null, pdfPage=1, pdfZoom=2.2;
+let pdfDoc=null, pdfPage=1, pdfZoom=1.0, pdfBaseScale=1.0;
 const LETTERS=['א','ב','ג','ד'];
 
 // ── DRAG & DROP ───────────────────────────────────────
@@ -861,22 +861,23 @@ async function renderPDF(){
   document.getElementById('vInfo').textContent=`${pdfPage}/${tot}`;
   document.getElementById('vZoom').textContent=Math.round(pdfZoom*100)+'%';
   const page=await pdfDoc.getPage(pdfPage);
-  // calculate scale to fit full width
   const wrap=document.getElementById('pdfWrap');
-  const availWidth=wrap.clientWidth - 40;
+  const availWidth=wrap.clientWidth||900;
+  // calculate base scale to fit width at 100%
   const viewport0=page.getViewport({scale:1});
-  const autoScale=availWidth/viewport0.width;
-  const scale=pdfZoom===2.2 ? autoScale : pdfZoom; // use auto on first render
-  const vp=page.getViewport({scale});
+  pdfBaseScale=availWidth/viewport0.width;
+  // apply zoom multiplier on top of base scale
+  const vp=page.getViewport({scale:pdfBaseScale*pdfZoom});
   const canvas=document.createElement('canvas');
-  canvas.width=vp.width;canvas.height=vp.height;
-  canvas.style.width='100%';canvas.style.height='auto';
+  canvas.width=vp.width;
+  canvas.height=vp.height;
+  canvas.style.display='block';
   await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
   wrap.innerHTML='';wrap.appendChild(canvas);
 }
 
 async function vPage(d){pdfPage+=d;await renderPDF();}
-async function vZoom(d){pdfZoom=Math.max(0.4,Math.min(3,pdfZoom+d));await renderPDF();}
+async function vZoom(d){pdfZoom=Math.max(0.5,Math.min(4,pdfZoom+d));await renderPDF();}
 
 function vPrevFile(){
   if(curIdx>0){curIdx--;renderSB();loadViewer(curIdx);}
